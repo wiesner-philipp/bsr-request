@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title data-i18n="admin_page_title">Admin · Beat Saber Wunschliste</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="admin">
+  <div class="bar">
+    <a href="/" data-i18n="to_list">Zur Wunschliste</a>
+    <div class="lang" role="group" data-i18n-label="lang_label">
+      <button type="button" data-lang="de" title="Deutsch">DE</button>
+      <button type="button" data-lang="en" title="English">EN</button>
+    </div>
+  </div>
+  <h1 data-i18n="admin_heading">Einstellungen</h1>
+
+  <section id="login" hidden>
+    <h2 data-i18n="login_heading">Anmelden</h2>
+    <label for="pw" data-i18n="admin_pw">Admin-Passwort</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <div class="actions"><button id="loginBtn" class="btn" data-i18n="login_btn">Anmelden</button></div>
+  </section>
+
+  <div id="panel" hidden>
+    <section>
+      <h2 data-i18n="sec_twitch">Twitch-Account</h2>
+      <p><span data-i18n="state_label">Status:</span> <span id="state" class="pill off"></span></p>
+      <label for="clientId" data-i18n="client_id">Twitch Client-ID</label>
+      <input id="clientId" type="text" autocomplete="off">
+      <p class="hint" data-i18n-html="client_hint"></p>
+      <div class="actions">
+        <button id="connect" class="btn"></button>
+        <button id="disconnect" class="btn secondary" data-i18n="disconnect" hidden>Trennen</button>
+      </div>
+      <div id="device" hidden>
+        <p><span data-i18n="device_pre"></span> <a id="verify" href="#" target="_blank" rel="noopener" data-i18n="device_link"></a><span data-i18n="device_post"></span></p>
+        <div id="userCode" class="code"></div>
+        <p class="hint" id="deviceMsg"></p>
+      </div>
+    </section>
+
+    <section>
+      <h2 data-i18n="sec_chat">Chat und Limits</h2>
+      <label for="channel" data-i18n="channel">Ziel-Kanal</label>
+      <input id="channel" type="text" placeholder="channel_name" autocomplete="off">
+      <label for="template" data-i18n="message">Nachricht</label>
+      <input id="template" type="text">
+      <p class="hint" data-i18n-html="message_hint"></p>
+      <div class="row">
+        <div>
+          <label for="ipCd" data-i18n="ip_cd">Wartezeit pro Gast (Sekunden)</label>
+          <input id="ipCd" type="number" min="0" max="86400">
+        </div>
+        <div>
+          <label for="mapCd" data-i18n="map_cd">Wartezeit pro Map (Sekunden)</label>
+          <input id="mapCd" type="number" min="0" max="86400">
+        </div>
+      </div>
+      <label for="defaultLang" data-i18n="default_lang">Standardsprache</label>
+      <select id="defaultLang">
+        <option value="de">Deutsch</option>
+        <option value="en">English</option>
+      </select>
+      <p class="hint" data-i18n="default_lang_hint"></p>
+      <div class="actions">
+        <button id="save" class="btn" data-i18n="save">Speichern</button>
+        <span id="saveMsg" class="hint"></span>
+      </div>
+    </section>
+
+    <div class="actions"><button id="logout" class="btn secondary" data-i18n="logout">Abmelden</button></div>
+  </div>
+</div>
+<script src="i18n.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
