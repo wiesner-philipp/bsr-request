@@ -254,6 +254,7 @@ app.get('/api/maps', wrap(async (req, res) => {
       duration: d.metadata?.duration || 0,
       score: d.stats?.score ?? null,
       cover: v.coverURL || '',
+      preview: v.previewURL || '',
       diffs: [...new Set((v.diffs || []).map((x) => x.difficulty))],
     };
   });

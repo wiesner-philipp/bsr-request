@@ -23,6 +23,8 @@
       sent_toast: '„{name}“ wurde in den Chat geschickt',
       by_mapper: 'Map von {mapper}',
       positive: '{n} % positiv',
+      preview: 'Vorschau abspielen: {name}',
+      preview_failed: 'Die Vorschau konnte nicht abgespielt werden.',
 
       admin_page_title: 'Admin · Beat Saber Wunschliste',
       admin_heading: 'Einstellungen',
@@ -102,6 +104,8 @@
       sent_toast: '“{name}” was sent to the chat',
       by_mapper: 'Mapped by {mapper}',
       positive: '{n}% positive',
+      preview: 'Play preview: {name}',
+      preview_failed: 'The preview could not be played.',
 
       admin_page_title: 'Admin · Beat Saber Requests',
       admin_heading: 'Settings',

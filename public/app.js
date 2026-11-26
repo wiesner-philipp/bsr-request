@@ -15,6 +15,29 @@ function toast(msg, bad = false) {
   toast.timer = setTimeout(() => (el.className = ''), 3500);
 }
 
+let audio = null, playingEl = null;
+
+function stopPreview() {
+  if (audio) { audio.pause(); audio = null; }
+  if (playingEl) { playingEl.classList.remove('playing'); playingEl.setAttribute('aria-pressed', 'false'); playingEl = null; }
+}
+
+function togglePreview(m, el) {
+  const same = playingEl === el;
+  stopPreview();
+  if (same) return;
+  const a = new Audio(m.preview);
+  a.volume = 0.6;
+  audio = a;
+  playingEl = el;
+  el.classList.add('playing');
+  el.setAttribute('aria-pressed', 'true');
+  const fail = () => { if (audio === a) { stopPreview(); toast(t('preview_failed'), true); } };
+  a.addEventListener('ended', () => { if (audio === a) stopPreview(); });
+  a.addEventListener('error', fail);
+  a.play().catch(fail);
+}
+
 function card(m) {
   const li = document.createElement('li');
   li.className = 'card';
@@ -55,7 +78,17 @@ function card(m) {
   btn.disabled = !isReady();
   btn.addEventListener('click', () => request(m, btn));
 
-  li.append(img, info, btn);
+  const cover = document.createElement(m.preview ? 'button' : 'div');
+  cover.className = 'cover';
+  if (m.preview) {
+    cover.type = 'button';
+    cover.setAttribute('aria-label', t('preview', { name: m.name }));
+    cover.setAttribute('aria-pressed', 'false');
+    cover.addEventListener('click', () => togglePreview(m, cover));
+  }
+  cover.append(img);
+
+  li.append(cover, info, btn);
   return li;
 }
 
@@ -94,7 +127,7 @@ async function load(reset) {
   if (loading && !reset) return;
   loading = true;
   const mine = reset ? ++token : token;
-  if (reset) { page = 0; loaded = []; grid.replaceChildren(); more.hidden = true; empty.hidden = true; }
+  if (reset) { stopPreview(); page = 0; loaded = []; grid.replaceChildren(); more.hidden = true; empty.hidden = true; }
   lastErr = null;
   renderError();
   more.disabled = true;
@@ -126,6 +159,7 @@ async function loadStatus() {
 
 // Sprachwechsel: nur UI-Texte neu zeichnen, Map-Daten bleiben unverändert
 i18n.onChange(() => {
+  stopPreview();
   renderStatus();
   renderError();
   grid.replaceChildren(...loaded.map(card));

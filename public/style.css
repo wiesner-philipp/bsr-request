@@ -47,6 +47,15 @@ main { padding: 20px max(16px, calc((100vw - 1100px) / 2)) 60px; }
   background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px;
 }
 .card img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; background: var(--line); }
+.cover { position: relative; display: block; width: 96px; height: 96px; padding: 0; border: 0; border-radius: 8px; overflow: hidden; background: var(--line); }
+.cover img { display: block; }
+button.cover { cursor: pointer; }
+button.cover::after {
+  content: "\25B6"; position: absolute; right: 6px; bottom: 6px; width: 28px; height: 28px;
+  display: grid; place-items: center; padding-left: 2px; border-radius: 50%;
+  background: rgba(22, 19, 31, 0.8); color: #fff; font-size: 0.8rem;
+}
+button.cover.playing::after { content: "\275A\275A"; padding-left: 0; background: var(--red); font-size: 0.6rem; letter-spacing: -1px; }
 .info { min-width: 0; }
 .info h2 { font-size: 1.05rem; font-weight: 700; overflow-wrap: anywhere; }
 .info p { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -80,6 +89,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 @media (max-width: 520px) {
   .card { grid-template-columns: 72px 1fr; }
   .card img { width: 72px; height: 72px; }
+  .cover { width: 72px; height: 72px; }
   .req { grid-column: 1 / -1; }
 }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }

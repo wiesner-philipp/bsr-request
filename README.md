@@ -4,6 +4,7 @@ Guests search maps from [BeatSaver](https://beatsaver.com) and press one button 
 The service then posts `!bsr CODE` into your Twitch chat. Built for Beat Saber parties with a Twitch chat bot.
 
 - Search, sorting and cover previews, one button per map
+- Audio preview: click a cover to play or stop the map preview
 - Per-guest and per-map cooldowns against spam
 - UI in German and English: the default language is set in the admin, guests switch themselves with the DE/EN toggle (BeatSaver content stays untranslated)
 - Settings in the browser at `/admin`, no client secret required
