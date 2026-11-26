@@ -22,7 +22,7 @@ Or without Compose:
 docker run -d --name bsr-requests -p 3000:3000 \
   -e ADMIN_PASSWORD="change-me" \
   -v bsr-data:/data \
-  ghcr.io/OWNER/bsr-requests:latest
+  ghcr.io/wiesner-philipp/bsr-requests:latest
 ```
 
 - Request page: http://localhost:3000
@@ -59,7 +59,7 @@ npm install
 DATA_DIR=./data ADMIN_PASSWORD=test npm start
 ```
 
-Every push to `main` triggers GitHub Actions, which builds the image and publishes it as `ghcr.io/<owner>/bsr-requests:latest`.
+Every push to `main` triggers GitHub Actions, which builds the image and publishes it as `ghcr.io/wiesner-philipp/bsr-requests:latest`.
 Tags like `v1.2.0` additionally produce the version tags `1.2.0` and `1.2`.
 
 ## Support

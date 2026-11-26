@@ -1,6 +1,6 @@
 services:
   bsr-requests:
-    image: ghcr.io/OWNER/bsr-requests:latest   # OWNER durch deinen GitHub-Namen (klein geschrieben) ersetzen
+    image: ghcr.io/wiesner-philipp/bsr-requests:latest
     restart: unless-stopped
     ports:
       - "${HOST_PORT:-3000}:3000"
