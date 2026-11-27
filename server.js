@@ -232,6 +232,58 @@ const sendChat = async (message, retry = true) => {
 /* ---------- Öffentliche API ---------- */
 app.get('/api/status', (req, res) => res.json({ ready: !!(cfg.auth && cfg.channel), channel: cfg.channel, defaultLang: cfg.defaultLang }));
 
+// Map-Daten für Suche und Verlauf. Lightshow-Schwierigkeitsgrade werden ausgeblendet.
+const simplify = (d) => {
+  const v = d.versions?.[0] || {};
+  return {
+    id: d.id,
+    name: d.metadata?.songName || d.name,
+    artist: d.metadata?.songAuthorName || '',
+    mapper: d.uploader?.name || d.metadata?.levelAuthorName || '',
+    duration: d.metadata?.duration || 0,
+    score: d.stats?.score ?? null,
+    cover: v.coverURL || '',
+    preview: v.previewURL || '',
+    diffs: [...new Set((v.diffs || []).filter((x) => x.characteristic !== 'Lightshow').map((x) => x.difficulty))],
+  };
+};
+
+// Zuletzt gesehene Maps, damit der Verlauf ohne zweite BeatSaver-Anfrage auskommt
+const mapById = new Map();
+const rememberMap = (m) => {
+  if (mapById.size > 2000) mapById.clear();
+  mapById.set(m.id, m);
+};
+const fetchMap = async (id) => {
+  try {
+    const r = await fetch(`https://api.beatsaver.com/maps/id/${id}`, {
+      headers: { 'User-Agent': 'bsr-party-requests/1.0' },
+      signal: AbortSignal.timeout(5000),
+    });
+    return r.ok ? simplify(await r.json()) : null;
+  } catch { return null; }
+};
+
+// Verlauf aller Wünsche (ohne IP-Adressen), gespeichert im Volume
+const HISTORY_FILE = path.join(DATA_DIR, 'history.json');
+const HISTORY_MAX = 500;
+let historyLog = [];
+try { historyLog = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf8')); } catch { /* noch kein Verlauf */ }
+if (!Array.isArray(historyLog)) historyLog = [];
+const saveHistory = () => {
+  fs.writeFileSync(HISTORY_FILE + '.tmp', JSON.stringify(historyLog));
+  fs.renameSync(HISTORY_FILE + '.tmp', HISTORY_FILE);
+};
+const historyDoc = (e) => (e.map ? { ...e.map, requestedAt: e.ts } : { id: e.id, missing: true, requestedAt: e.ts });
+
+// Live-Updates des Verlaufs per Server-Sent Events
+const sseClients = new Set();
+const broadcast = (event, data) => {
+  const msg = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+  for (const c of sseClients) c.write(msg);
+};
+setInterval(() => { for (const c of sseClients) c.write(': ping\n\n'); }, 25_000).unref();
+
 const mapCache = new Map();
 app.get('/api/maps', wrap(async (req, res) => {
   const q = String(req.query.q || '').trim().slice(0, 100);
@@ -244,20 +296,8 @@ app.get('/api/maps', wrap(async (req, res) => {
   const url = `https://api.beatsaver.com/search/text/${page}?sortOrder=${sort}&q=${encodeURIComponent(q)}`;
   const r = await fetch(url, { headers: { 'User-Agent': 'bsr-party-requests/1.0' }, signal: AbortSignal.timeout(10_000) });
   if (!r.ok) throw new HttpError(502, 'beatsaver_down');
-  const docs = ((await r.json()).docs || []).map((d) => {
-    const v = d.versions?.[0] || {};
-    return {
-      id: d.id,
-      name: d.metadata?.songName || d.name,
-      artist: d.metadata?.songAuthorName || '',
-      mapper: d.uploader?.name || d.metadata?.levelAuthorName || '',
-      duration: d.metadata?.duration || 0,
-      score: d.stats?.score ?? null,
-      cover: v.coverURL || '',
-      preview: v.previewURL || '',
-      diffs: [...new Set((v.diffs || []).map((x) => x.difficulty))],
-    };
-  });
+  const docs = ((await r.json()).docs || []).map(simplify);
+  docs.forEach(rememberMap);
   const data = { docs, hasMore: docs.length >= 20 };
   if (mapCache.size > 500) mapCache.clear();
   mapCache.set(key, { t: Date.now(), data });
@@ -293,8 +333,37 @@ app.post('/api/request', wrap(async (req, res) => {
     prevMap ? mapLast.set(id, prevMap) : mapLast.delete(id);
     throw e;
   }
+
+  const entry = { id, ts: Date.now(), map: mapById.get(id) || null };
+  historyLog.push(entry);
+  if (historyLog.length > HISTORY_MAX) historyLog.splice(0, historyLog.length - HISTORY_MAX);
+  saveHistory();
   res.json({ ok: true });
+  broadcast('add', historyDoc(entry));
+  if (!entry.map) fetchMap(id).then((m) => { if (m) { entry.map = m; saveHistory(); broadcast('update', historyDoc(entry)); } });
 }));
+
+app.get('/api/history', (req, res) => {
+  const page = Math.min(Math.max(parseInt(req.query.page, 10) || 0, 0), 500);
+  const size = 20;
+  const newest = [...historyLog].reverse();
+  const docs = newest.slice(page * size, (page + 1) * size).map(historyDoc);
+  res.json({ docs, hasMore: newest.length > (page + 1) * size });
+});
+
+app.get('/api/history/stream', (req, res) => {
+  if (sseClients.size >= 500) return res.status(503).end();
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no', // nginx soll nicht puffern
+  });
+  res.flushHeaders();
+  res.write('retry: 3000\n\n');
+  sseClients.add(res);
+  req.on('close', () => sseClients.delete(res));
+});
 
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 app.listen(PORT, () => console.log(`Läuft auf Port ${PORT}`));

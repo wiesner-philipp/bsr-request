@@ -5,6 +5,9 @@ The service then posts `!bsr CODE` into your Twitch chat. Built for Beat Saber p
 
 - Search, sorting and cover previews, one button per map
 - Audio preview: click a cover to play or stop the map preview
+- History tab: every requested map with timestamp, same buttons as the search (stored in `/data/history.json`, last 500 requests, no IP addresses)
+- The history updates live (Server-Sent Events) while the tab is open
+- Lightshow difficulties are hidden
 - Per-guest and per-map cooldowns against spam
 - UI in German and English: the default language is set in the admin, guests switch themselves with the DE/EN toggle (BeatSaver content stays untranslated)
 - Settings in the browser at `/admin`, no client secret required
@@ -49,7 +52,7 @@ Everything else (channel, message template, cooldowns, default language) is conf
 
 ## Notes
 
-- Run it behind HTTPS (Caddy, Traefik, nginx).
+- Run it behind HTTPS (Caddy, Traefik, nginx). For the live history, the proxy must not buffer `/api/history/stream` (nginx: `proxy_buffering off;`, Caddy and Traefik work out of the box).
 - The posting account must be allowed to chat in the target channel (not banned, mind follower/sub-only mode).
 - The admin password and tokens are stored in `/data/config.json`. Do not share the volume.
 

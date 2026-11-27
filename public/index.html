@@ -17,6 +17,10 @@
     </div>
     <h1 data-i18n="heading">Beat Saber Wunschliste</h1>
     <p id="status" class="status"></p>
+    <nav class="tabs" data-i18n-label="nav_label">
+      <button type="button" data-view="maps" data-i18n="tab_maps"></button>
+      <button type="button" data-view="history" data-i18n="tab_history"></button>
+    </nav>
     <div class="controls">
       <input id="q" type="search" data-i18n-ph="search_ph" data-i18n-label="search_label" autocomplete="off">
       <select id="sort" data-i18n-label="sort_label">
@@ -30,7 +34,7 @@
 
   <main>
     <ul id="grid" class="grid"></ul>
-    <p id="empty" class="note" data-i18n="empty" hidden></p>
+    <p id="empty" class="note" hidden></p>
     <p id="error" class="note err" hidden></p>
     <button id="more" class="more" data-i18n="load_more" hidden></button>
   </main>
